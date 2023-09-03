@@ -1,34 +1,36 @@
 {
-  /* <div class="welcome-container">
-        <div class="welcome-row1">
-          <h1>Welcome To The Weather App</h1>
-          <p>Here is your current location</p>
-          <div class="locations">
-            <div class="lat">Lat: 123546</div>
-            <div class="long">Long: 12334453454</div>
-          </div>
-        </div>
-        <div class="welcome-row2">
-          <iframe
-            src="https://maps.google.com/maps?q=35.856737, 10.606619&z=15&output=embed"
-            frameborder="0"
-            style="border: 0"
-          ></iframe>
+  /* 
+    <div class="welcome-container">
+      <div class="welcome-row1">
+        <h1>Welcome To The Weather App</h1>
+        <p>Here is your current location</p>
+        <div class="locations">
+          <div class="lat">Lat: 123546</div>
+          <div class="long">Long: 12334453454</div>
         </div>
       </div>
-      <div class="weatherData">
-        <h1>Your Weather Data</h1>
-        <div class="weather-container">
-          <div>Location: New Delhi</div>
-          <div>Wind Speed: 100kmph</div>
-          <div>Humidity: 10</div>
-          <div>Time Zone: GMT +5:30</div>
-          <div>Pressure: 10atm</div>
-          <div>Wind Direction: North West</div>
-          <div>UV Index: 500</div>
-          <div>Feels like: 30<sup>o</sup></div>
-        </div>
-      </div> */
+      <div class="welcome-row2">
+        <iframe
+          src="https://maps.google.com/maps?q=35.856737, 10.606619&z=15&output=embed"
+          frameborder="0"
+          style="border: 0"
+        ></iframe>
+      </div>
+    </div>
+    <div class="weatherData">
+      <h1>Your Weather Data</h1>
+      <div class="weather-container">
+        <div>Location: New Delhi</div>
+        <div>Wind Speed: 100kmph</div>
+        <div>Humidity: 10</div>
+        <div>Time Zone: GMT +5:30</div>
+        <div>Pressure: 10atm</div>
+        <div>Wind Direction: North West</div>
+        <div>UV Index: 500</div>
+        <div>Feels like: 30<sup>o</sup></div>
+      </div>
+    </div>
+  */
 }
 
 let apiKey = "6f77e29330640c4746a34f0a52fa8cce";
@@ -80,11 +82,8 @@ async function fetchWeatherData(lat, lon) {
   let url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
 
   try {
-    
     let response = await fetch(url, { method: "GET" });
-  
     let result = await response.json();
-    
     return result;
   } catch (error) {
     console.log(error);
@@ -109,40 +108,52 @@ getGeoLocation();
 
 async function addDataToUI(lat, lon) {
   let ans = await fetchWeatherData(lat, lon);
-  // console.log(ans);
+
+  const timezoneOffsetHours = Math.floor(Math.abs(ans.timezone) / 3600);
+  const timezoneOffsetMinutes = Math.abs(ans.timezone) % 3600 / 60;
+  
+  // Determine the sign of the timezone offset (positive or negative)
+  const timezoneSign = ans.timezone >= 0 ? '+' : '-';
+  
+  // Create a string for the formatted time zone without "GMT"
+  const formattedTimezone = `GMT ${timezoneSign}${timezoneOffsetHours}:${String(timezoneOffsetMinutes).padStart(2, '0')}`;
+  
+
   let childContainer = document.createElement("div");
-  childContainer.innerHTML = `<div class="welcome-container">
-  <div class="welcome-row1">
-    <h1>Welcome To The Weather App</h1>
-    <p>Here is your current location</p>
-    <div class="locations">
-      <div class="lat">Lat: ${ans.coord.lat}</div>
-      <div class="long">Long: ${ans.coord.lon}</div>
-    </div>
-  </div>
-  <div class="welcome-row2">
-    <iframe
-      src="https://maps.google.com/maps?q=${ans.coord.lat}, ${
+  childContainer.innerHTML = `
+    <div class="welcome-container">
+      <div class="welcome-row1">
+        <h1>Welcome To The Weather App</h1>
+        <p>Here is your current location</p>
+        <div class="locations">
+          <div class="lat">Lat: ${ans.coord.lat}</div>
+          <div class="long">Long: ${ans.coord.lon}</div>
+        </div>
+      </div>
+      <div class="welcome-row2">
+        <iframe
+          src="https://maps.google.com/maps?q=${ans.coord.lat}, ${
     ans.coord.lon
   }&z=15&output=embed"
-      frameborder="0"
-      style="border: 0"
-    ></iframe>
-  </div>
-</div>
-<div class="weatherData">
-  <h1>Your Weather Data</h1>
-  <div class="weather-container">
-    <div>Location :  ${ans.name}</div>
-    <div>Wind Speed :  ${convertWindSpeedToKmph(ans.wind.speed)}kmph</div>
-    <div>Humidity :  ${ans.main.humidity}</div>
-    <div>Time Zone :  ${new Date(ans.timezone).toUTCString()}</div>
-    <div>Pressure:  ${convertPressureToAtm(ans.main.pressure)}atm</div>
-    <div>Wind Direction :  ${degreesToCompassDirection(ans.wind.deg)}</div>
-    <div>UV Index : 500</div>
-    <div>Feels like :  ${Math.floor(ans.main.feels_like)}<sup>o</sup></div>
-  </div>
-</div>`;
+          frameborder="0"
+          style="border: 0"
+        ></iframe>
+      </div>
+    </div>
+    <div class="weatherData">
+      <h1>Your Weather Data</h1>
+      <div class="weather-container">
+        <div>Location :  ${ans.name}</div>
+        <div>Wind Speed :  ${convertWindSpeedToKmph(ans.wind.speed)} kmph</div>
+        <div>Humidity :  ${ans.main.humidity}</div>
+        <div>Time Zone :  ${formattedTimezone}</div>
+        <div>Pressure:  ${convertPressureToAtm(ans.main.pressure)} atm</div>
+        <div>Wind Direction :  ${degreesToCompassDirection(ans.wind.deg)}</div>
+        <div>UV Index : 500</div>
+        <div>Feels like :  ${Math.floor(ans.main.feels_like)}<sup>o</sup></div>
+      </div>
+    </div>
+  `;
 
   mainContainer.appendChild(childContainer);
 }
